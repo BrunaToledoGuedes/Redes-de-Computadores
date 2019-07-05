@@ -1,0 +1,84 @@
+<?php
+
+$name = 'script_mininet.py';
+$text = "#!/usr/bin/python
+from mininet.topo import Topo
+from mininet.cli import CLI
+from mininet.net import Mininet
+from mininet.node import RemoteController
+def simpleTest():
+    net = Mininet()
+    c1 = net.addController( 'c1', ip = '127.0.0.1', port=6653 )
+    s1 = net.addSwitch( 's1' )
+	";
+$file = fopen($name, 'w');
+fwrite($file, $text);
+      $nm_select = "select nome, ip, mascara, gateway from tbd_host"; 
+      $_SESSION['scriptcase']['sc_sql_ult_comando'] = $nm_select; 
+      $_SESSION['scriptcase']['sc_sql_ult_conexao'] = ''; 
+      if ($this->meus_dados = $this->Db->Execute($nm_select)) 
+      { }
+      elseif (isset($GLOBALS["NM_ERRO_IBASE"]) && $GLOBALS["NM_ERRO_IBASE"] != 1)  
+      { 
+          $this->meus_dados = false;
+          $this->meus_dados_erro = $this->Db->ErrorMsg();
+      } 
+;
+if ($this->meus_dados  === false)
+{
+	echo "Erro de acesso. Mensagem = " . $this->meus_dados_erro ;
+}
+else
+{
+	while (!$this->meus_dados->EOF){
+		$text = "\n    ".$this->meus_dados->fields[0]." = net.addHost('".$this->meus_dados->fields[0]."', ip = '".$this->meus_dados->fields[1]."', mascara = '".$this->meus_dados->fields[2]."', gateway = '".$this->meus_dados->fields[3]."')\n";
+		fwrite($file, $text);
+		$text = "\n    link".$this->meus_dados->fields[0]." = net.addLink('".$this->meus_dados->fields[0]."', s1, bw=10, delay='10ms', loss=0)\n";
+		fwrite($file, $text);
+		$this->meus_dados->MoveNext();
+}
+	$this->meus_dados->Close();
+}
+      $nm_select = "select id, nome_host1, nome_host2, bw, delay, loss from tbd_link"; 
+      $_SESSION['scriptcase']['sc_sql_ult_comando'] = $nm_select; 
+      $_SESSION['scriptcase']['sc_sql_ult_conexao'] = ''; 
+      if ($this->meus_dados = $this->Db->Execute($nm_select)) 
+      { }
+      elseif (isset($GLOBALS["NM_ERRO_IBASE"]) && $GLOBALS["NM_ERRO_IBASE"] != 1)  
+      { 
+          $this->meus_dados = false;
+          $this->meus_dados_erro = $this->Db->ErrorMsg();
+      } 
+;
+if ($this->meus_dados  === false)
+{
+	echo "Erro de acesso. Mensagem = " . $this->meus_dados_erro ;
+}
+else
+{
+	while (!$this->meus_dados->EOF){
+		$text = "\n    link".$this->meus_dados->fields[0]." = net.addLink('".$this->meus_dados->fields[1]."', '".$this->meus_dados->fields[2]."', bw=".$this->meus_dados->fields[3].", delay='".$this->meus_dados->fields[4]."', loss=".$this->meus_dados->fields[5].")\n";
+		$this->meus_dados->MoveNext();
+		fwrite($file, $text);
+}
+	$this->meus_dados->Close();
+}
+
+$text = "
+    net.build()
+	
+    c1.start()  
+    s1.start([c1])
+    CLI(net)
+
+if __name__ == '__main__':
+
+    simpleTest()";
+
+fwrite($file, $text);
+
+echo "Script Gerado => ";
+echo "<a href=\"script_mininet.py\">Clique aqui para fazer o download<a/><br>";
+
+fclose($file);
+?>
